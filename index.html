@@ -2,6 +2,7 @@
 <html>
  <head>
   <title>Hot Drop</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- CRITICAL: Added Viewport Meta Tag for Mobile -->
   <script src="/_sdk/element_sdk.js"></script>
   <style>
       /* --- GLOBAL STYLES (Monochrome/Dark) --- */
@@ -203,13 +204,19 @@
         box-shadow: 0 20px 50px rgba(255, 0, 0, 0.3);
       }
 
+      /* Optimized for fluid aspect ratio on all devices */
       .modal-video {
         width: 100%;
-        height: 550px;
+        position: relative;
+        padding-bottom: 56.25%; /* 16:9 Aspect Ratio (9 / 16 * 100) */
+        height: 0; 
         background: #000;
       }
 
       .modal-video iframe {
+        position: absolute;
+        top: 0;
+        left: 0;
         width: 100%;
         height: 100%;
         border: none;
@@ -261,11 +268,8 @@
       }
 
       /* --- MEDIA QUERIES (Responsiveness) --- */
-      @media (max-width: 1024px) {
-        .modal-video {
-          height: 400px;
-        }
-      }
+      
+      /* Removed fixed height for modal video as it now uses aspect ratio */
 
       @media (max-width: 768px) {
         .video-grid {
@@ -277,9 +281,7 @@
           height: 30px;
         }
 
-        .modal-video {
-          height: 300px;
-        }
+        /* Removed fixed modal-video height here too */
       }
 
       @media (max-width: 480px) {
@@ -380,9 +382,9 @@
      </div>
     </div>
     <!-- Fourth Video Box (New Content) -->
-    <div class="video-card" onclick="openVideo('https://drive.google.com/file/d/1sONIQbAT3phSKfsOMBQcwhTgGCsrIj3o/preview', 'Epic Clip #4 (Fresh)', '634', '41', '19')">
-     <div class="video-thumbnail"><iframe src="https://drive.google.com/file/d/1sONIQbAT3phSKfsOMBQcwhTgGCsrIj3o/preview" allow="autoplay" allowfullscreen></iframe>
-        <div class="play-overlay">
+    <div class="video-card" onclick="openVideo('https://drive.google.com/file/d/11sONIQbAT3phSKfsOMBQcwhTgGCsrIj3o/preview', 'Epic Clip #4 (Fresh)', '634', '41', '19')">
+     <div class="video-thumbnail"><iframe src="https://drive.google.com/file/d/11sONIQbAT3phSKfsOMBQcwhTgGCsrIj3o/preview" allow="autoplay" allowfullscreen></iframe>
+      <div class="play-overlay">
        PLAY
       </div>
      </div>
