@@ -1,0 +1,633 @@
+<!doctype html>
+<html>
+ <head>
+  <title>Hot Drop</title>
+  <script src="/_sdk/element_sdk.js"></script>
+  <style>
+      /* --- GLOBAL STYLES (Monochrome/Dark) --- */
+      body {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        /* Dark background with slight gradient */
+        background: linear-gradient(135deg, #1f1f1f 0%, #0d0d0d 100%);
+        color: #e0e0e0;
+        font-family: 'Inter', 'Segoe UI', 'Arial', sans-serif;
+        min-height: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+
+      html {
+        height: 100%;
+      }
+
+      .app-container {
+        min-height: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* --- HEADER STYLES (Red Accent) --- */
+      .header {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: rgba(13, 13, 13, 0.95);
+        padding: 15px 20px;
+        text-align: center;
+        /* Red border accent */
+        border-bottom: 3px solid #ff0000; 
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(8px);
+        display: flex;
+        justify-content: center;
+      }
+
+      .header img {
+        height: 40px; /* Adjust height for the logo */
+        width: auto;
+        content-visibility: auto;
+      }
+
+      /* --- GRID LAYOUT --- */
+      .video-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 25px;
+        padding: 25px;
+        max-width: 1200px;
+        margin: 0 auto;
+        flex-grow: 1;
+      }
+
+      /* --- VIDEO CARD STYLES --- */
+      .video-card {
+        background: #2a2a2a; /* Dark card background */
+        border-radius: 12px;
+        overflow: hidden;
+        position: relative;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 1px solid #333;
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+      }
+      
+      /* Red border on hover for focus */
+      .video-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(255, 0, 0, 0.2), 0 0 0 3px #ff0000;
+      }
+
+      .video-thumbnail {
+        width: 100%;
+        height: 200px;
+        background: #111; /* Even darker background for thumbnail */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 48px;
+        color: #888;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .video-thumbnail iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+        pointer-events: none;
+      }
+
+      /* --- SHINY PLAY BUTTON (Updated Style) --- */
+      .play-overlay {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        /* Shiny Red Gradient for 3D/Shine effect */
+        background: linear-gradient(145deg, #ff4d4d, #cc0000); 
+        border-radius: 8px; /* Rounded rectangular button */
+        padding: 10px 20px;
+        width: auto; 
+        height: auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        font-weight: 700;
+        color: #ffffff;
+        letter-spacing: 1px;
+        transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        z-index: 10;
+        /* Text shadow for a bit of 'shine' effect */
+        text-shadow: 0 0 8px rgba(255, 255, 255, 0.9);
+        box-shadow: 0 4px 20px rgba(255, 0, 0, 0.7);
+        border: 2px solid #ff9999; /* Lighter border for contrast */
+        text-transform: uppercase;
+      }
+      
+      /* Remove old image styling */
+      .play-overlay img {
+        display: none;
+      }
+
+      .video-card:hover .play-overlay {
+        transform: translate(-50%, -50%) scale(1.05); /* Slight scale on hover */
+        background: linear-gradient(145deg, #cc0000, #ff4d4d); /* Invert gradient on hover */
+        box-shadow: 0 4px 25px rgba(255, 0, 0, 0.9);
+      }
+
+      .video-info {
+        padding: 15px;
+        background: #1e1e1e; /* Card footer color */
+      }
+
+      .video-title {
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 10px;
+        color: #ffffff; /* White text */
+        line-height: 1.4;
+      }
+
+      .video-stats {
+        display: flex;
+        gap: 15px;
+        font-size: 13px;
+        color: #aaaaaa; /* Lighter grey text */
+      }
+
+      .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 10px;
+        background: #333333;
+        border-radius: 15px;
+        border: 1px solid #444444;
+        transition: background-color 0.2s ease;
+      }
+
+      .stat-item:hover {
+        background: #ff0000; /* Red hover for stats */
+        color: #fff;
+      }
+
+      /* --- MODAL STYLES --- */
+      .video-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.95);
+        backdrop-filter: blur(12px);
+        z-index: 1000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        box-sizing: border-box;
+      }
+
+      .modal-content {
+        position: relative;
+        width: 100%;
+        max-width: 1000px;
+        max-height: 95%;
+        background: #111;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 4px solid #ff0000; /* Red modal border */
+        box-shadow: 0 20px 50px rgba(255, 0, 0, 0.3);
+      }
+
+      .modal-video {
+        width: 100%;
+        height: 550px;
+        background: #000;
+      }
+
+      .modal-video iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+      }
+
+      .modal-info {
+        padding: 20px;
+        background: #1a1a1a;
+      }
+
+      .modal-title {
+        font-size: 22px;
+        font-weight: 700;
+        margin-bottom: 10px;
+        color: #ffffff;
+      }
+
+      .modal-stats {
+        display: flex;
+        gap: 20px;
+        font-size: 14px;
+        color: #aaaaaa;
+      }
+
+      .close-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: #ff0000;
+        border: none;
+        color: white;
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        font-size: 20px;
+        font-weight: bold;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.2s ease, background-color 0.2s ease;
+        z-index: 10;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+      }
+
+      .close-btn:hover {
+        background: #e60000;
+        transform: scale(1.1) rotate(90deg);
+      }
+
+      /* --- MEDIA QUERIES (Responsiveness) --- */
+      @media (max-width: 1024px) {
+        .modal-video {
+          height: 400px;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .video-grid {
+          gap: 15px;
+          padding: 15px;
+        }
+        
+        .header img {
+          height: 30px;
+        }
+
+        .modal-video {
+          height: 300px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .video-grid {
+          grid-template-columns: 1fr;
+        }
+        .modal-info {
+            padding: 15px;
+        }
+        .modal-title {
+            font-size: 18px;
+        }
+        .modal-stats {
+            font-size: 13px;
+        }
+      }
+    </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
+ </head>
+ <body>
+  <div class="app-container">
+   <div class="header">
+    <!-- Logo is placed here -->
+    <img id="app-logo" src="logo.jpg" alt="Hot Drop Logo" onerror="this.onerror=null; this.src='https://placehold.co/150x40/111/fff?text=Hot+Drop'">
+   </div>
+   <div class="video-grid" id="videoGrid">
+    <div class="video-card" onclick="openVideo('https://drive.google.com/file/d/1zbwA5bwljAuj0XPYa8XONnLFBnKiUQAt/preview', 'Amazing Short Video #1', '1.2K', '89', '45')">
+     <div class="video-thumbnail"><iframe src="https://drive.google.com/file/d/1zbwA5bwljAuj0XPYa8XONnLFBnKiUQAt/preview" allow="autoplay" allowfullscreen></iframe>
+      <div class="play-overlay">
+       PLAY
+      </div>
+     </div>
+     <div class="video-info">
+      <div class="video-title">
+       Amazing Short Video #1
+      </div>
+      <div class="video-stats">
+       <div class="stat-item">
+        ❤️ 1.2K
+       </div>
+       <div class="stat-item">
+        💬 89
+       </div>
+       <div class="stat-item">
+        📤 45
+       </div>
+      </div>
+     </div>
+    </div>
+    <!-- Second Video Box with the Drive link -->
+    <div class="video-card" onclick="openVideo('https://drive.google.com/file/d/1C3Kta7uHm2oou57mI_o_LtQ-GxLxWE9J/preview', 'Trending Content #2', '856', '23', '12')">
+     <div class="video-thumbnail"><iframe src="https://drive.google.com/file/d/1C3Kta7uHm2oou57mI_o_LtQ-GxLxWE9J/preview" allow="autoplay" allowfullscreen></iframe>
+      <div class="play-overlay">
+       PLAY
+      </div>
+     </div>
+     <div class="video-info">
+      <div class="video-title">
+       Trending Content #2
+      </div>
+      <div class="video-stats">
+       <div class="stat-item">
+        ❤️ 856
+       </div>
+       <div class="stat-item">
+        💬 23
+       </div>
+       <div class="stat-item">
+        📤 12
+       </div>
+      </div>
+     </div>
+    </div>
+    <!-- Third Video Box (New Content) -->
+    <div class="video-card" onclick="openVideo('https://drive.google.com/file/d/1ALiYnGTRg5bCRTGv9kBVXhE3jWR31p_A/preview', 'Viral Moment #3 (New)', '2.1K', '156', '78')">
+     <div class="video-thumbnail"><iframe src="https://drive.google.com/file/d/1ALiYnGTRg5bCRTGv9kBVXhE3jWR31p_A/preview" allow="autoplay" allowfullscreen></iframe>
+      <div class="play-overlay">
+       PLAY
+      </div>
+     </div>
+     <div class="video-info">
+      <div class="video-title">
+       Viral Moment #3 (New)
+      </div>
+      <div class="video-stats">
+       <div class="stat-item">
+        ❤️ 2.1K
+       </div>
+       <div class="stat-item">
+        💬 156
+       </div>
+       <div class="stat-item">
+        📤 78
+       </div>
+      </div>
+     </div>
+    </div>
+    <!-- Fourth Video Box (New Content) -->
+    <div class="video-card" onclick="openVideo('https://drive.google.com/file/d/1sONIQbAT3phSKfsOMBQcwhTgGCsrIj3o/preview', 'Epic Clip #4 (Fresh)', '634', '41', '19')">
+     <div class="video-thumbnail"><iframe src="https://drive.google.com/file/d/1sONIQbAT3phSKfsOMBQcwhTgGCsrIj3o/preview" allow="autoplay" allowfullscreen></iframe>
+        <div class="play-overlay">
+       PLAY
+      </div>
+     </div>
+     <div class="video-info">
+      <div class="video-title">
+       Epic Clip #4 (Fresh)
+      </div>
+      <div class="video-stats">
+       <div class="stat-item">
+        ❤️ 634
+       </div>
+       <div class="stat-item">
+        💬 41
+       </div>
+       <div class="stat-item">
+        📤 19
+       </div>
+      </div>
+     </div>
+    </div>
+    <!-- Fifth Video Box (New Content) -->
+    <div class="video-card" onclick="openVideo('https://drive.google.com/file/d/1RYiCzBiYPzm9I-QDQbym5J0Zg_LasnDJ/preview', 'Comedy Gold #5 (New Leak)', '3.4K', '234', '112')">
+     <div class="video-thumbnail"><iframe src="https://drive.google.com/file/d/1RYiCzBiYPzm9I-QDQbym5J0Zg_LasnDJ/preview" allow="autoplay" allowfullscreen></iframe>
+      <div class="play-overlay">
+       PLAY
+      </div>
+     </div>
+     <div class="video-info">
+      <div class="video-title">
+       Comedy Gold #5 (New Leak)
+      </div>
+      <div class="video-stats">
+       <div class="stat-item">
+        ❤️ 3.4K
+       </div>
+       <div class="stat-item">
+        💬 234
+       </div>
+       <div class="stat-item">
+        📤 112
+       </div>
+      </div>
+     </div>
+    </div>
+    <!-- Original Video Box 6 -->
+    <div class="video-card" onclick="openVideo('', 'Music Vibes #6', '1.8K', '67', '34')">
+     <div class="video-thumbnail">
+      🎵 
+      <div class="play-overlay">
+       PLAY
+      </div>
+     </div>
+     <div class="video-info">
+      <div class="video-title">
+       Music Vibes #6
+      </div>
+      <div class="video-stats">
+       <div class="stat-item">
+        ❤️ 1.8K
+       </div>
+       <div class="stat-item">
+        💬 67
+       </div>
+       <div class="stat-item">
+        📤 34
+       </div>
+      </div>
+     </div>
+    </div>
+    <!-- Original Video Box 7 -->
+    <div class="video-card" onclick="openVideo('', 'Dance Moves #7', '945', '78', '29')">
+     <div class="video-thumbnail">
+      💃 
+      <div class="play-overlay">
+       PLAY
+      </div>
+     </div>
+     <div class="video-info">
+      <div class="video-title">
+       Dance Moves #7
+      </div>
+      <div class="video-stats">
+       <div class="stat-item">
+        ❤️ 945
+       </div>
+       <div class="stat-item">
+        💬 78
+       </div>
+       <div class="stat-item">
+        📤 29
+       </div>
+      </div>
+     </div>
+    </div>
+    <!-- Original Video Box 8 -->
+    <div class="video-card" onclick="openVideo('', 'Tech Review #8', '2.7K', '189', '95')">
+     <div class="video-thumbnail">
+      📱 
+      <div class="play-overlay">
+       PLAY
+      </div>
+     </div>
+     <div class="video-info">
+      <div class="video-title">
+       Tech Review #8
+      </div>
+      <div class="video-stats">
+       <div class="stat-item">
+        ❤️ 2.7K
+       </div>
+       <div class="stat-item">
+        💬 189
+       </div>
+       <div class="stat-item">
+        📤 95
+       </div>
+      </div>
+     </div>
+    </div>
+   </div><!-- Video Modal -->
+   <div class="video-modal" id="videoModal">
+    <div class="modal-content"><button class="close-btn" onclick="closeVideo()">×</button>
+     <div class="modal-video" id="modalVideo"><!-- Video will be loaded here -->
+     </div>
+     <div class="modal-info">
+      <div class="modal-title" id="modalTitle">
+       Video Title
+      </div>
+      <div class="modal-stats" id="modalStats">
+       <div class="stat-item">
+        ❤️ <span id="modalLikes">0</span>
+       </div>
+       <div class="stat-item">
+        💬 <span id="modalComments">0</span>
+       </div>
+       <div class="stat-item">
+        📤 <span id="modalShares">0</span>
+       </div>
+      </div>
+     </div>
+    </div>
+   </div>
+  </div>
+  <script>
+      const defaultConfig = {
+        app_title: "Hot Drop" // Changed default title to match logo
+      };
+
+      let config = { ...defaultConfig };
+
+      async function onConfigChange(newConfig) {
+        config = { ...config, ...newConfig };
+        
+        // The title in the SDK is now primarily for display/name, but we use the image in the header.
+        // If we were to use text, we would update it here. For now, we rely on the logo image.
+      }
+
+      function mapToCapabilities(config) {
+        return {
+          recolorables: [],
+          borderables: [],
+          fontEditable: undefined,
+          fontSizeable: undefined
+        };
+      }
+
+      function mapToEditPanelValues(config) {
+        return new Map([
+          ["app_title", config.app_title || defaultConfig.app_title]
+        ]);
+      }
+
+      // Initialize Element SDK
+      if (window.elementSdk) {
+        window.elementSdk.init({
+          defaultConfig,
+          onConfigChange,
+          mapToCapabilities,
+          mapToEditPanelValues
+        });
+      }
+
+      // Video modal functionality
+      function openVideo(videoUrl, title, likes, comments, shares) {
+        const modal = document.getElementById('videoModal');
+        const modalVideo = document.getElementById('modalVideo');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalLikes = document.getElementById('modalLikes');
+        const modalComments = document.getElementById('modalComments');
+        const modalShares = document.getElementById('modalShares');
+
+        // Update modal content
+        modalTitle.textContent = title;
+        modalLikes.textContent = likes;
+        modalComments.textContent = comments;
+        modalShares.textContent = shares;
+
+        // Load video if URL is provided
+        if (videoUrl) {
+          // Use the provided video URL directly as the iframe source
+          modalVideo.innerHTML = `<iframe src="${videoUrl}" allow="autoplay" allowfullscreen style="width: 100%; height: 100%; border: none;"></iframe>`;
+        } else {
+          // Fallback if no URL provided
+          modalVideo.innerHTML = `
+            <div style="display: flex; align-items: center; justify-content: center; height: 100%; background: linear-gradient(45deg, #222, #333); color: #888; font-size: 24px;">
+              🚫 Video Source Not Found
+            </div>
+          `;
+        }
+
+        // Show modal
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeVideo() {
+        const modal = document.getElementById('videoModal');
+        const modalVideo = document.getElementById('modalVideo');
+        
+        // Hide modal
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+        
+        // Clear video content to stop playback
+        modalVideo.innerHTML = '';
+      }
+
+      // Close modal when clicking outside content
+      document.getElementById('videoModal').addEventListener('click', (e) => {
+        if (e.target.id === 'videoModal') {
+          closeVideo();
+        }
+      });
+
+      // Close modal with Escape key
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          closeVideo();
+        }
+      });
+
+      // Prevent modal content clicks from closing modal
+      document.querySelector('.modal-content').addEventListener('click', (e) => {
+        e.stopPropagation();
+      });
+    </script>
+ </body>
+</html>
