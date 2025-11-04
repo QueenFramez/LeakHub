@@ -175,7 +175,7 @@
         color: #fff;
       }
 
-      /* --- MODAL STYLES --- */
+      /* --- MODAL STYLES (Vertical Scroll/Swipe) --- */
       .video-modal {
         position: fixed;
         top: 0;
@@ -185,35 +185,67 @@
         background: rgba(0, 0, 0, 0.95);
         backdrop-filter: blur(12px);
         z-index: 1000;
-        display: none;
+        display: none; 
+        /* Enable vertical scrolling and mandatory scroll-snapping */
+        overflow-y: scroll;
+        scroll-snap-type: y mandatory;
+        -webkit-overflow-scrolling: touch; 
+        padding: 0;
+      }
+
+      .modal-content {
+        /* Holds all video slides */
+        width: 100%;
+        max-width: none;
+        max-height: none;
+        background: transparent;
+        border-radius: 0;
+        overflow: visible;
+        border: none;
+        box-shadow: none;
+        display: flex;
+        flex-direction: column;
+      }
+      
+      /* The individual full-screen video container */
+      .video-slide {
+        width: 100%;
+        min-height: 100vh; /* Each slide takes up the full viewport height */
+        display: flex;
+        flex-direction: column;
+        justify-content: center; 
         align-items: center;
-        justify-content: center;
+        scroll-snap-align: start; /* Snap to the start of the slide */
         padding: 20px;
         box-sizing: border-box;
       }
 
-      .modal-content {
-        position: relative;
+      /* Wrapper to give the video content a centered, mobile-feed-like frame */
+      .slide-wrapper {
         width: 100%;
-        max-width: 1000px;
-        max-height: 95%;
+        max-width: 500px; /* Max width suitable for vertical video */
+        height: 100%;
+        max-height: 90vh; /* Max height for content */
         background: #111;
         border-radius: 12px;
         overflow: hidden;
-        border: 4px solid #ff0000; /* Red modal border */
-        box-shadow: 0 20px 50px rgba(255, 0, 0, 0.3);
-      }
-
-      /* Optimized for fluid aspect ratio on all devices */
-      .modal-video {
-        width: 100%;
         position: relative;
-        padding-bottom: 56.25%; /* 16:9 Aspect Ratio (9 / 16 * 100) */
-        height: 0; 
+        display: flex;
+        flex-direction: column;
+        border: 4px solid #ff0000;
+        box-shadow: 0 0 30px rgba(255, 0, 0, 0.5);
+      }
+      
+      .modal-video-container {
+        width: 100%;
+        flex-grow: 1; 
+        position: relative;
+        height: 100%;
         background: #000;
       }
 
-      .modal-video iframe {
+      /* The iframe itself */
+      .video-player {
         position: absolute;
         top: 0;
         left: 0;
@@ -225,6 +257,7 @@
       .modal-info {
         padding: 20px;
         background: #1a1a1a;
+        flex-shrink: 0; 
       }
 
       .modal-title {
@@ -242,9 +275,10 @@
       }
 
       .close-btn {
-        position: absolute;
-        top: 10px;
-        right: 10px;
+        /* Fixed close button for easy access */
+        position: fixed;
+        top: 20px;
+        right: 20px;
         background: #ff0000;
         border: none;
         color: white;
@@ -258,7 +292,7 @@
         align-items: center;
         justify-content: center;
         transition: transform 0.2s ease, background-color 0.2s ease;
-        z-index: 10;
+        z-index: 1001; /* Above modal content */
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
       }
 
@@ -268,9 +302,6 @@
       }
 
       /* --- MEDIA QUERIES (Responsiveness) --- */
-      
-      /* Removed fixed height for modal video as it now uses aspect ratio */
-
       @media (max-width: 768px) {
         .video-grid {
           gap: 15px;
@@ -280,8 +311,13 @@
         .header img {
           height: 30px;
         }
-
-        /* Removed fixed modal-video height here too */
+        .video-slide {
+            padding: 10px;
+        }
+        .slide-wrapper {
+            max-width: 100%; /* Use full width on small screens */
+            max-height: 100vh;
+        }
       }
 
       @media (max-width: 480px) {
@@ -297,6 +333,10 @@
         .modal-stats {
             font-size: 13px;
         }
+        .close-btn {
+            top: 15px;
+            right: 15px;
+        }
       }
     </style>
   <style>@view-transition { navigation: auto; }</style>
@@ -310,6 +350,7 @@
     <img id="app-logo" src="logo.jpg" alt="Hot Drop Logo" onerror="this.onerror=null; this.src='https://placehold.co/150x40/111/fff?text=Hot+Drop'">
    </div>
    <div class="video-grid" id="videoGrid">
+    <!-- Existing Video Card #1 -->
     <div class="video-card" onclick="openVideo('https://drive.google.com/file/d/1zbwA5bwljAuj0XPYa8XONnLFBnKiUQAt/preview', 'Amazing Short Video #1', '1.2K', '89', '45')">
      <div class="video-thumbnail"><iframe src="https://drive.google.com/file/d/1zbwA5bwljAuj0XPYa8XONnLFBnKiUQAt/preview" allow="autoplay" allowfullscreen></iframe>
       <div class="play-overlay">
@@ -333,7 +374,7 @@
       </div>
      </div>
     </div>
-    <!-- Second Video Box with the Drive link -->
+    <!-- Existing Video Card #2 -->
     <div class="video-card" onclick="openVideo('https://drive.google.com/file/d/1C3Kta7uHm2oou57mI_o_LtQ-GxLxWE9J/preview', 'Trending Content #2', '856', '23', '12')">
      <div class="video-thumbnail"><iframe src="https://drive.google.com/file/d/1C3Kta7uHm2oou57mI_o_LtQ-GxLxWE9J/preview" allow="autoplay" allowfullscreen></iframe>
       <div class="play-overlay">
@@ -357,7 +398,7 @@
       </div>
      </div>
     </div>
-    <!-- Third Video Box (New Content) -->
+    <!-- Existing Video Card #3 -->
     <div class="video-card" onclick="openVideo('https://drive.google.com/file/d/1ALiYnGTRg5bCRTGv9kBVXhE3jWR31p_A/preview', 'Viral Moment #3 (New)', '2.1K', '156', '78')">
      <div class="video-thumbnail"><iframe src="https://drive.google.com/file/d/1ALiYnGTRg5bCRTGv9kBVXhE3jWR31p_A/preview" allow="autoplay" allowfullscreen></iframe>
       <div class="play-overlay">
@@ -381,7 +422,7 @@
       </div>
      </div>
     </div>
-    <!-- Fourth Video Box (New Content) -->
+    <!-- Existing Video Card #4 -->
     <div class="video-card" onclick="openVideo('https://drive.google.com/file/d/1sONIQbAT3phSKfsOMBQcwhTgGCsrIj3o/preview', 'Epic Clip #4 (Fresh)', '634', '41', '19')">
      <div class="video-thumbnail"><iframe src="https://drive.google.com/file/d/1sONIQbAT3phSKfsOMBQcwhTgGCsrIj3o/preview" allow="autoplay" allowfullscreen></iframe>
       <div class="play-overlay">
@@ -405,7 +446,7 @@
       </div>
      </div>
     </div>
-    <!-- Fifth Video Box (New Content) -->
+    <!-- Existing Video Card #5 -->
     <div class="video-card" onclick="openVideo('https://drive.google.com/file/d/1RYiCzBiYPzm9I-QDQbym5J0Zg_LasnDJ/preview', 'Comedy Gold #5 (New Leak)', '3.4K', '234', '112')">
      <div class="video-thumbnail"><iframe src="https://drive.google.com/file/d/1RYiCzBiYPzm9I-QDQbym5J0Zg_LasnDJ/preview" allow="autoplay" allowfullscreen></iframe>
       <div class="play-overlay">
@@ -504,42 +545,132 @@
       </div>
      </div>
     </div>
-   </div><!-- Video Modal -->
-   <div class="video-modal" id="videoModal">
-    <div class="modal-content"><button class="close-btn" onclick="closeVideo()">×</button>
-     <div class="modal-video" id="modalVideo"><!-- Video will be loaded here -->
-     </div>
-     <div class="modal-info">
-      <div class="modal-title" id="modalTitle">
-       Video Title
+    
+    <!-- --- NEW VIDEO CARDS ADDED BELOW --- -->
+    
+    <!-- New Video Card #9 -->
+    <div class="video-card" onclick="openVideo('https://drive.google.com/file/d/1F5XWLjggs1RzJKHeqQIR4dCYfG4iS5j9/preview', 'Exclusive Drop #9 (Pro)', '4.5K', '321', '188')">
+     <div class="video-thumbnail"><iframe src="https://drive.google.com/file/d/1F5XWLjggs1RzJKHeqQIR4dCYfG4iS5j9/preview" allow="autoplay" allowfullscreen></iframe>
+      <div class="play-overlay">
+       PLAY
       </div>
-      <div class="modal-stats" id="modalStats">
+     </div>
+     <div class="video-info">
+      <div class="video-title">
+       Exclusive Drop #9 (Pro)
+      </div>
+      <div class="video-stats">
        <div class="stat-item">
-        ❤️ <span id="modalLikes">0</span>
+        ❤️ 4.5K
        </div>
        <div class="stat-item">
-        💬 <span id="modalComments">0</span>
+        💬 321
        </div>
        <div class="stat-item">
-        📤 <span id="modalShares">0</span>
+        📤 188
+       </div>
+      </div>
+     </div>
+    </div>
+    
+    <!-- New Video Card #10 -->
+    <div class="video-card" onclick="openVideo('https://drive.google.com/file/d/1WxonPS_L5S-h2Jnk4GLBAtDrGdc_zFQv/preview', 'Hidden Gem #10', '1.9K', '110', '55')">
+     <div class="video-thumbnail"><iframe src="https://drive.google.com/file/d/1WxonPS_L5S-h2Jnk4GLBAtDrGdc_zFQv/preview" allow="autoplay" allowfullscreen></iframe>
+      <div class="play-overlay">
+       PLAY
+      </div>
+     </div>
+     <div class="video-info">
+      <div class="video-title">
+       Hidden Gem #10
+      </div>
+      <div class="video-stats">
+       <div class="stat-item">
+        ❤️ 1.9K
+       </div>
+       <div class="stat-item">
+        💬 110
+       </div>
+       <div class="stat-item">
+        📤 55
+       </div>
+      </div>
+     </div>
+    </div>
+
+    <!-- New Video Card #11 -->
+    <div class="video-card" onclick="openVideo('https://drive.google.com/file/d/1NFTFtJ9k06K8sv3nHmatKH7Q_no9e9fh/preview', 'POV Insider #11', '7.8K', '540', '290')">
+     <div class="video-thumbnail"><iframe src="https://drive.google.com/file/d/1NFTFtJ9k06K8sv3nHmatKH7Q_no9e9fh/preview" allow="autoplay" allowfullscreen></iframe>
+      <div class="play-overlay">
+       PLAY
+      </div>
+     </div>
+     <div class="video-info">
+      <div class="video-title">
+       POV Insider #11
+      </div>
+      <div class="video-stats">
+       <div class="stat-item">
+        ❤️ 7.8K
+       </div>
+       <div class="stat-item">
+        💬 540
+       </div>
+       <div class="stat-item">
+        📤 290
+       </div>
+      </div>
+     </div>
+    </div>
+
+    <!-- New Video Card #12 -->
+    <div class="video-card" onclick="openVideo('https://drive.google.com/file/d/1dp0oSHqo4ojlOzpkEsrVjqxqQw-ZAlbw/preview', 'Breaking News #12', '1.1K', '99', '40')">
+     <div class="video-thumbnail"><iframe src="https://drive.google.com/file/d/1dp0oSHqo4ojlOzpkEsrVjqxqQw-ZAlbw/preview" allow="autoplay" allowfullscreen></iframe>
+      <div class="play-overlay">
+       PLAY
+      </div>
+     </div>
+     <div class="video-info">
+      <div class="video-title">
+       Breaking News #12
+      </div>
+      <div class="video-stats">
+       <div class="stat-item">
+        ❤️ 1.1K
+       </div>
+       <div class="stat-item">
+        💬 99
+       </div>
+       <div class="stat-item">
+        📤 40
        </div>
       </div>
      </div>
     </div>
    </div>
+   
+   <!-- Video Modal (Refactored for Vertical Swiping) -->
+   <div class="video-modal" id="videoModal">
+    <!-- Fixed close button outside the scrolling content -->
+    <button class="close-btn" onclick="closeVideo()">×</button>
+    <div class="modal-content" id="modalContent">
+        <!-- Video Slides will be dynamically inserted here by JavaScript -->
+    </div>
+   </div>
+   
   </div>
   <script>
       const defaultConfig = {
-        app_title: "Hot Drop" // Changed default title to match logo
+        app_title: "Hot Drop"
       };
 
       let config = { ...defaultConfig };
+      let videoData = [];
+      let isPlayingIndex = -1; // Track which video is currently loaded/playing
+      let scrollTimer = null; // For debouncing scroll checks
 
       async function onConfigChange(newConfig) {
         config = { ...config, ...newConfig };
-        
-        // The title in the SDK is now primarily for display/name, but we use the image in the header.
-        // If we were to use text, we would update it here. For now, we rely on the logo image.
       }
 
       function mapToCapabilities(config) {
@@ -567,70 +698,173 @@
         });
       }
 
-      // Video modal functionality
-      function openVideo(videoUrl, title, likes, comments, shares) {
-        const modal = document.getElementById('videoModal');
-        const modalVideo = document.getElementById('modalVideo');
-        const modalTitle = document.getElementById('modalTitle');
-        const modalLikes = document.getElementById('modalLikes');
-        const modalComments = document.getElementById('modalComments');
-        const modalShares = document.getElementById('modalShares');
+      /**
+       * 1. Extracts video data from HTML and stores it in videoData array.
+       * 2. Updates the 'onclick' attribute of each card to only pass its index.
+       */
+      function initializeVideos() {
+        const videoCards = document.querySelectorAll('.video-card');
+        
+        videoData = Array.from(videoCards).map((card, index) => {
+          const onclickAttr = card.getAttribute('onclick');
+          // Regex to extract arguments: openVideo('url', 'title', 'likes', 'comments', 'shares')
+          const match = onclickAttr.match(/openVideo\(['"]([^'"]*)['"],\s*['"]([^'"]*)['"],\s*['"]([^'"]*)['"],\s*['"]([^'"]*)['"],\s*['"]([^'"]*)['"]\)/);
+          
+          // IMPORTANT: Update the card's onclick handler to use the new signature
+          card.setAttribute('onclick', `openVideo(${index})`);
 
-        // Update modal content
-        modalTitle.textContent = title;
-        modalLikes.textContent = likes;
-        modalComments.textContent = comments;
-        modalShares.textContent = shares;
+          if (match) {
+            return {
+              index: index,
+              url: match[1],
+              title: match[2],
+              likes: match[3],
+              comments: match[4],
+              shares: match[5]
+            };
+          }
+          return null;
+        }).filter(data => data !== null);
+      }
 
-        // Load video if URL is provided
-        if (videoUrl) {
-          // Use the provided video URL directly as the iframe source
-          modalVideo.innerHTML = `<iframe src="${videoUrl}" allow="autoplay" allowfullscreen style="width: 100%; height: 100%; border: none;"></iframe>`;
-        } else {
-          // Fallback if no URL provided
-          modalVideo.innerHTML = `
-            <div style="display: flex; align-items: center; justify-content: center; height: 100%; background: linear-gradient(45deg, #222, #333); color: #888; font-size: 24px;">
-              🚫 Video Source Not Found
-            </div>
+      /**
+       * Renders all video slides into the modal content container.
+       */
+      function renderModalSlides() {
+        const modalContent = document.getElementById('modalContent');
+        
+        // Use map/join to efficiently build the HTML string for all slides
+        modalContent.innerHTML = videoData.map(video => {
+          // Store video URL in data-src. src will be set later by JS for playback.
+          const videoHtml = video.url 
+              ? `<iframe class="video-player" data-src="${video.url}" allow="autoplay" allowfullscreen></iframe>`
+              : `<div class="video-player-fallback" style="display: flex; align-items: center; justify-content: center; height: 100%; background: linear-gradient(45deg, #222, #333); color: #888; font-size: 24px;">🚫 Video Source Not Found</div>`;
+
+          // Template for a single full-screen video slide
+          return `
+              <div class="video-slide" data-index="${video.index}">
+                  <div class="slide-wrapper">
+                      <div class="modal-video-container">
+                          ${videoHtml}
+                      </div>
+                      <div class="modal-info">
+                          <div class="modal-title">${video.title}</div>
+                          <div class="modal-stats">
+                              <div class="stat-item">❤️ <span>${video.likes}</span></div>
+                              <div class="stat-item">💬 <span>${video.comments}</span></div>
+                              <div class="stat-item">📤 <span>${video.shares}</span></div>
+                          </div>
+                      </div>
+                  </div>
+              </div>
           `;
-        }
+        }).join('');
+      }
 
-        // Show modal
+      /**
+       * Checks which video is currently in the viewport and pauses/plays accordingly.
+       */
+      function checkVideoVisibility() {
+        const modal = document.getElementById('videoModal');
+        const slides = modal.querySelectorAll('.video-slide');
+        if (slides.length === 0) return;
+
+        // Calculate the index of the video currently snapped to the top of the viewport
+        const viewportHeight = window.innerHeight;
+        // Round to nearest integer to account for scroll-snap
+        const scrollIndex = Math.round(modal.scrollTop / viewportHeight);
+
+        // Prevent redundant processing if the active index hasn't changed
+        if (scrollIndex === isPlayingIndex) return;
+        
+        isPlayingIndex = scrollIndex;
+        
+        slides.forEach((slide, index) => {
+            const player = slide.querySelector('.video-player');
+            const dataSrc = player ? player.getAttribute('data-src') : null;
+
+            if (!player || !dataSrc) return;
+
+            if (index === scrollIndex) {
+                // PLAY: Video is in view, ensure src is set to start playback
+                if (player.src !== dataSrc) {
+                    player.src = dataSrc;
+                }
+            } else {
+                // PAUSE: Video is out of view, clear src to stop playback
+                if (player.src) {
+                    player.src = '';
+                }
+            }
+        });
+      }
+      
+      /**
+       * Debounced handler for scroll events. This prevents checkVideoVisibility from firing excessively.
+       */
+      function handleScroll() {
+          clearTimeout(scrollTimer);
+          scrollTimer = setTimeout(() => {
+              checkVideoVisibility();
+          }, 150); // Small delay to fire only after scrolling/snapping has largely settled
+      }
+
+      /**
+       * Opens the modal, renders slides, and scrolls to the selected video index.
+       * @param {number} selectedIndex The index of the video to open.
+       */
+      function openVideo(selectedIndex) {
+        const modal = document.getElementById('videoModal');
+        
+        // 1. Render all slides before displaying the modal
+        renderModalSlides();
+
+        // 2. Show modal and hide body scroll
         modal.style.display = 'flex';
         document.body.style.overflow = 'hidden';
+        
+        // 3. Scroll to the selected video using the index and viewport height
+        requestAnimationFrame(() => {
+            const scrollPosition = selectedIndex * window.innerHeight;
+            // Use 'instant' for initial jump. checkVideoVisibility will handle the playback state.
+            modal.scrollTo({
+                top: scrollPosition,
+                behavior: 'instant' 
+            });
+            // Immediately run check after initial scroll to start the first video
+            checkVideoVisibility(); 
+        });
+
+        // Add the scroll listener
+        modal.addEventListener('scroll', handleScroll);
       }
 
       function closeVideo() {
         const modal = document.getElementById('videoModal');
-        const modalVideo = document.getElementById('modalVideo');
+        const modalContent = document.getElementById('modalContent');
         
+        // Remove scroll listener
+        modal.removeEventListener('scroll', handleScroll);
+
         // Hide modal
         modal.style.display = 'none';
         document.body.style.overflow = 'auto';
         
-        // Clear video content to stop playback
-        modalVideo.innerHTML = '';
+        // Clear content and reset state to stop all video playback and free up resources
+        modalContent.innerHTML = '';
+        isPlayingIndex = -1;
+        clearTimeout(scrollTimer);
       }
-
-      // Close modal when clicking outside content
-      document.getElementById('videoModal').addEventListener('click', (e) => {
-        if (e.target.id === 'videoModal') {
-          closeVideo();
-        }
-      });
 
       // Close modal with Escape key
       document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
+        if (e.key === 'Escape' && document.getElementById('videoModal').style.display === 'flex') {
           closeVideo();
         }
       });
-
-      // Prevent modal content clicks from closing modal
-      document.querySelector('.modal-content').addEventListener('click', (e) => {
-        e.stopPropagation();
-      });
+      
+      // Run initialization when the window loads
+      window.addEventListener('load', initializeVideos);
     </script>
  </body>
 </html>
-
